@@ -42,9 +42,7 @@ public class Reports extends Thread {
 
 	private RptVar sharedRptVar;
 
-//	private ReportController reportController;
 	private Commons checkLib;
-//	private MainService mainService;
 	
 	private Boolean stoptag = false;
 	private Boolean isrunning = false;
@@ -70,7 +68,6 @@ public class Reports extends Thread {
 	private String clientIp = "";
 	private Integer clientPort = 0;
 	
-//	private String filePathRoot = commonsStr.filePathRoot;
 	private String kepcoHome = commonsStr.kepcoHome;
 	
 	public void setRptVar(RptVar rptVar) {

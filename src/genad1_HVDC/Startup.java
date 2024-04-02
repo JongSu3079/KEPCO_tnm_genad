@@ -106,7 +106,6 @@ public class Startup {
 				String[] iedArray = readLine.split(",");
 				String ied_ip = iedArray[0];
 				String ied_port = iedArray[1];
-//				String[] reportsArray = iedArray[2].split(":");
 				String reportsName_file = iedArray[2];
 				String ld = iedArray[3];
 				

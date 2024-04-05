@@ -113,9 +113,9 @@ public class ReportReceiver extends Thread {
 				wholeMsg = wholeMsg + response;
 				wholeCopy = wholeMsg;
 				
-				System.out.println("----------------- wholeMsg -----------------------------------");
-				System.out.println(wholeMsg);
-				System.out.println("----------------------------------------------------");
+//				System.out.println("----------------- wholeMsg -----------------------------------");
+//				System.out.println(wholeMsg);
+//				System.out.println("----------------------------------------------------");
 
 				// for pruning or extending
 				finalMsg = "";

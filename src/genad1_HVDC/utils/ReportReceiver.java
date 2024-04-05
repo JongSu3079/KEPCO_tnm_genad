@@ -113,9 +113,9 @@ public class ReportReceiver extends Thread {
 				wholeMsg = wholeMsg + response;
 				wholeCopy = wholeMsg;
 				
-//				System.out.println("----------------- wholeMsg -----------------------------------");
-//				System.out.println(wholeMsg);
-//				System.out.println("----------------------------------------------------");
+				System.out.println("----------------- wholeMsg -----------------------------------");
+				System.out.println(wholeMsg);
+				System.out.println("----------------------------------------------------");
 
 				// for pruning or extending
 				finalMsg = "";
@@ -138,8 +138,12 @@ public class ReportReceiver extends Thread {
 							// _reports.add(finalMsg);							
 //							sharedRptVar.addReport(finalMsg);
 							
-							// EvtTransF, TrendTransF, RTTransF
-							if(finalMsg.contains("EvtTransF") || finalMsg.contains("TrendTransF") || finalMsg.contains("RTTransF")) {
+							// SBSH, SIML ( 레포트의 value값으로 파일 생성 )
+							if(finalMsg.contains("SBSH") || finalMsg.contains("SIML")) {
+								sharedRptVar.addReportQueue(finalMsg);
+							}
+							// EvtTransF, TrendTransF, RTTransF ( FILE_GET을 이용해서 파일 생성 )
+							else if(finalMsg.contains("EvtTransF") || finalMsg.contains("TrendTransF") || finalMsg.contains("RTTransF")) {
 								sharedRptVar.addReportQueue(finalMsg);
 							}
 							

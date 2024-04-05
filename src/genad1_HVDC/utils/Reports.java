@@ -140,7 +140,7 @@ public class Reports extends Thread {
 					JsonArray respDataRf = null;
 					if (dataObj.has("data-reference")) respDataRf = dataObj.get("data-reference").getAsJsonArray();
 					if (respDataRf != null) {
-						
+							
 						for (int j = 0; j<respDataRf.size(); j++) {
 							
 							// GNDMUGLU01/SCBR2$ST$EvtTransF
@@ -154,7 +154,8 @@ public class Reports extends Thread {
 							System.out.println("----> 레포트 fileType : " + fileType);
 							
 							// 이벤트, 트렌드, 실시간 레포트가 아닐경우 skip
-							if(!fileType.equals("EvtTransF") && !fileType.equals("TrendTransF") && !fileType.equals("RTTransF")) {
+							// SBSH, SIML ( 레포트의 value값으로 파일 생성 )
+							if(!fileType.equals("EvtTransF") && !fileType.equals("TrendTransF") && !fileType.equals("RTTransF") && !finalMsg.contains("SBSH") && !finalMsg.contains("SIML")) {
 								continue;
 							}
 							
@@ -174,13 +175,22 @@ public class Reports extends Thread {
 //							String[] timeArray = valueArray[2].split("[.]");
 //							String dateTime = timeArray[0];
 							
-							// Unix타임 변환
-							long unixTime = Long.parseLong(valueArray[0]);
-							Date date = new Date(unixTime*1000L);
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-//							sdf.setTimeZone(TimeZone.getTimeZone("GMT+9"));
+							Date date = new Date(); // SBSH (MLU 부싱 진단장치), SIML (MLU 유중가스 분석장치_DGA)
 							
+							//=======================================================================
+							//   SBSH (MLU 부싱 진단장치), SIML (MLU 유중가스 분석장치_DGA)가 아니고
+							//   이벤트, 트렌드, 실시간 레포트인 경우
+							//=======================================================================
+							if(!finalMsg.contains("SBSH") && !finalMsg.contains("SIML")) {
+								
+								// Unix타임 변환
+								long unixTime = Long.parseLong(valueArray[0]);
+								date = new Date(unixTime*1000L);
+//								sdf.setTimeZone(TimeZone.getTimeZone("GMT+9"));
+							}
 							String dateTime = sdf.format(date);
+							
 							
 							// K_J9999_GLU101_CH01_CBOP_9999001
 							// "G101_01\\EVENT\\2024\\03\\20\\K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat";
@@ -202,6 +212,8 @@ public class Reports extends Thread {
 								fileFullPath += "\\TREND";
 							} else if(fileType.equals("RTTransF")) {
 								fileFullPath += "\\REALTIME";
+							} else {
+								fileFullPath += "\\VALUE";
 							}
 							
 							fileFullPath += "\\" + dateTime.substring(0, 4) + "\\" + dateTime.substring(4, 6) + "\\" + dateTime.substring(6, 8);
@@ -232,6 +244,8 @@ public class Reports extends Thread {
 									sensorKind_num = "51";
 								} else if(fileType.equals("RTTransF")) {
 									sensorKind_num = "50";
+								} else {
+									sensorKind_num = "99";
 								}
 							} else if(sensorKind.equals("TRDGA")) {
 								if(fileType.equals("EvtTransF")) {
@@ -240,6 +254,8 @@ public class Reports extends Thread {
 									sensorKind_num = "31";
 								} else if(fileType.equals("RTTransF")) {
 									sensorKind_num = "30";
+								} else {
+									sensorKind_num = "99";
 								}
 							} else if(sensorKind.equals("TCMOT")) {
 								if(fileType.equals("EvtTransF")) {
@@ -291,18 +307,21 @@ public class Reports extends Thread {
 							//   FILE_GET을 이용하지않고 value값으로 파일 생성
 							//   SBSH (MLU 부싱 진단장치), SIML (MLU 유중가스 분석장치_DGA)
 							//=======================================================================
-							if(fileLocation.contains("sbsh") || fileLocation.contains("siml")) {
+							if(finalMsg.contains("SBSH") || finalMsg.contains("SIML")) {
 								
 								// 파일 생성
-								FileWriter fileWriter = new FileWriter(uploadDir + fileName);	//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
+								FileWriter fileWriter = new FileWriter(uploadDir + fileName); //  /home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
 								PrintWriter printWriter = new PrintWriter(fileWriter);
-								printWriter.println(tempValue);
+								printWriter.println(finalMsg);
 								printWriter.close();
 								
 								// 파일 이동
-								File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
-								File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
+								File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
+								File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
 								uploadFile.renameTo(completeFile);
+								
+								// 레포트 json 전체를 파일로 저장 후 빠져나감.
+								break;
 							} 
 							//=======================================================================
 							//   FILE_GET을 이용해 파일 생성

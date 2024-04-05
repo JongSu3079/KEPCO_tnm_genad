@@ -29,7 +29,7 @@ public class Startup {
 		String dateStr2 = sdf2.format(date2);
 		
 		System.out.println("***************************************************************************");
-		System.out.println("    GIS Start  (" + dateStr2 + ") ");
+		System.out.println("    Start  (" + dateStr2 + ") ");
 		System.out.println("***************************************************************************");
 
 		Commons commons = new Commons();

@@ -175,6 +175,8 @@ public class Reports extends Thread {
 //							String[] timeArray = valueArray[2].split("[.]");
 //							String dateTime = timeArray[0];
 							
+							String unicTimeString = valueArray[0];
+							
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 							Date date = new Date(); // SBSH (MLU 부싱 진단장치), SIML (MLU 유중가스 분석장치_DGA)
 							
@@ -185,7 +187,7 @@ public class Reports extends Thread {
 							if(!finalMsg.contains("SBSH") && !finalMsg.contains("SIML")) {
 								
 								// Unix타임 변환
-								long unixTime = Long.parseLong(valueArray[0]);
+								long unixTime = Long.parseLong(unicTimeString);
 								date = new Date(unixTime*1000L);
 //								sdf.setTimeZone(TimeZone.getTimeZone("GMT+9"));
 							}
@@ -196,6 +198,7 @@ public class Reports extends Thread {
 							// "G101_01\\EVENT\\2024\\03\\20\\K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat";
 							String fileFullPath = "";
 							String fileName = "";
+							String fileName_reportResponse = "";
 							
 							String thirdStr = eenameArray[2];
 							if(thirdStr.startsWith("GLU")) {
@@ -204,9 +207,16 @@ public class Reports extends Thread {
 								fileFullPath = "M" + thirdStr.replace("MLU", "");
 							}
 							
+							// CBOP SWPD BSHCUR TRDGA TCMOT TCPD TRPD
+							String sensorKind = eenameArray[4];
+							
 							fileFullPath += "_" + eenameArray[3].replace("CH", "");
 							
-							if(fileType.equals("EvtTransF")) {
+							if(sensorKind.equals("BSHCUR")) {
+								fileFullPath += "\\VALUE";
+							} else if(sensorKind.equals("TRDGA")) {
+								fileFullPath += "\\VALUE";
+							} else if(fileType.equals("EvtTransF")) {
 								fileFullPath += "\\EVENT";
 							} else if(fileType.equals("TrendTransF")) {
 								fileFullPath += "\\TREND";
@@ -218,8 +228,6 @@ public class Reports extends Thread {
 							
 							fileFullPath += "\\" + dateTime.substring(0, 4) + "\\" + dateTime.substring(4, 6) + "\\" + dateTime.substring(6, 8);
 							
-							// CBOP SWPD BSHCUR TRDGA TCMOT TCPD TRPD
-							String sensorKind = eenameArray[4];
 							String sensorKind_num = "";
 							if(sensorKind.equals("CBOP")) {
 								if(fileType.equals("EvtTransF")) {
@@ -238,25 +246,9 @@ public class Reports extends Thread {
 									sensorKind_num = "00";
 								}
 							} else if(sensorKind.equals("BSHCUR")) {
-								if(fileType.equals("EvtTransF")) {
-									sensorKind_num = "52";
-								} else if(fileType.equals("TrendTransF")) {
-									sensorKind_num = "51";
-								} else if(fileType.equals("RTTransF")) {
-									sensorKind_num = "50";
-								} else {
-									sensorKind_num = "99";
-								}
+								sensorKind_num = "99";
 							} else if(sensorKind.equals("TRDGA")) {
-								if(fileType.equals("EvtTransF")) {
-									sensorKind_num = "32";
-								} else if(fileType.equals("TrendTransF")) {
-									sensorKind_num = "31";
-								} else if(fileType.equals("RTTransF")) {
-									sensorKind_num = "30";
-								} else {
-									sensorKind_num = "99";
-								}
+								sensorKind_num = "99";
 							} else if(sensorKind.equals("TCMOT")) {
 								if(fileType.equals("EvtTransF")) {
 									sensorKind_num = "42";
@@ -283,10 +275,23 @@ public class Reports extends Thread {
 								}
 							}
 							
-							fileName += eename + "_" + sensorKind_num + "_" + dateTime + ".dat";
+							// value값을 파일로 생성하는 경우에는 파일 끝에 레포트 이름 append
+							if(finalMsg.contains("SBSH_Measurand") || finalMsg.contains("SIML_Measurand")) {
+								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "measurand.dat";
+							} else if(finalMsg.contains("SBSH_Status") || finalMsg.contains("SIML_Status")) {
+								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "status.dat";
+							} else if(finalMsg.contains("SBSH_SettingValues")) {
+								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "settingvalues.dat";
+							} else if(finalMsg.contains("SIML_Diagnostic")) {
+								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "diagnostic.dat";
+							} else {
+								fileName += eename + "_" + sensorKind_num + "_" + dateTime + ".dat";
+								fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_" + unicTimeString + ".dat";
+							}
 							
 							System.out.println("fileFullPath ::: " + fileFullPath);
 							System.out.println("fileName ::: " + fileName);
+							System.out.println("fileName_reportResponse ::: " + fileName_reportResponse);
 							
 							// 폴더 생성
 							String fileFullPath_local = fileFullPath.replace("\\", "/");
@@ -364,10 +369,21 @@ public class Reports extends Thread {
 									
 									if(status.equals("Y")) {
 										
-										// 파일 이동
+										// bin 파일 이동
 										File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
 										File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
 										uploadFile.renameTo(completeFile);
+										
+										// Report response 파일 생성
+										FileWriter fileWriter = new FileWriter(uploadDir + fileName_reportResponse); // 
+										PrintWriter printWriter = new PrintWriter(fileWriter);
+										printWriter.println(finalMsg);
+										printWriter.close();
+										
+										// Report response 파일 이동
+										File uploadFile2 = new File(uploadDir + fileName_reportResponse);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_1713927726.dat
+										File completeFile2 = new File(completeDir + fileName_reportResponse);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_1713927726.dat
+										uploadFile2.renameTo(completeFile2);
 										
 									} else {
 										System.out.println("FILE_GET message (" + reportsName + ")  : " + message);

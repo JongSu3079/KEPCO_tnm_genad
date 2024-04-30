@@ -302,12 +302,13 @@ public class Startup {
 										
 										String report_rcb_name = "";
 										String report_rcb_receiver = "";
-										
+
+										//------------[ BRCB_SET_VALUES ]----------------------------------------------------------
 //										datatype_fc = "BR";
 //										key = ld + "/" + ln + "." + reportsName;
 //										value = "BRCB_SET_VALUES";
-//										String report_rcb_name = ld + "/" + ln + "." + datatype_fc + "." + reportsName;
-//										String report_rcb_receiver = ld + "/" + ln + "." + datatype_fc + "." + reportsName;
+//										report_rcb_name = ld + "/" + ln + "." + datatype_fc + "." + reportsName;
+//										report_rcb_receiver = ld + "/" + ln + "." + datatype_fc + "." + reportsName;
 //										
 //										System.out.println("==========================================================================");
 //										System.out.println("   key : " + key + " , value : " + value);
@@ -338,9 +339,9 @@ public class Startup {
 //										reportingObj.addProperty("report_setRptEna", "@@@@");
 //										reportingObj.addProperty("report_setConfRev", "@@@@");
 //										reportingObj.addProperty("report_setDataSet", "@@@@");
-//										reportingObj.addProperty("report_setBufTm", "@@@@");
+//										reportingObj.addProperty("report_setBufTm", "0");		//  @@@@  or  0
 //										reportingObj.addProperty("report_setPurgeBuf", "@@@@");
-//										reportingObj.addProperty("report_setIntgPd", "@@@@");
+//										reportingObj.addProperty("report_setIntgPd", "60000");		//  @@@@  or  6000(6초)
 //										reportingObj.addProperty("report_setEntryID", "@@@@");
 //										
 //										reportingObj.addProperty("report_setResv", "@@@@");
@@ -358,18 +359,18 @@ public class Startup {
 //										reportingObj.addProperty("report_optflds_segmnt", "@@@@");
 //										
 //										reportingObj.addProperty("report_trgops_bitsize", "6");
-//										reportingObj.addProperty("report_trgops_dchg", "1"); // 제나드에서는 Data change 만 지원함
+//										reportingObj.addProperty("report_trgops_dchg", "0"); // 제나드에서는 Data change 만 지원함 		//  1  or  0
 //										reportingObj.addProperty("report_trgops_dupd", "0");
 //										reportingObj.addProperty("report_trgops_qchg", "0");
-//										reportingObj.addProperty("report_trgops_intg", "0"); // 
-//										reportingObj.addProperty("report_trgops_gi", "0");
+//										reportingObj.addProperty("report_trgops_intg", "1");  	//  0  or  1
+//										reportingObj.addProperty("report_trgops_gi", "1"); 		//  0  or  1
 //										
 //										requestObject.add("command", commandObj);
 //										requestObject.add("reporting", reportingObj);
 //										requestObject.addProperty("client_unique_id", clientUniqueId);
 //										
 //										receiveString = "";
-//										receiveString = commons.socketConnection(ied_ip, Integer.parseInt(ied_port), clientIp, Integer.parseInt(clientPort), requestObject, reportsName, "");
+//										receiveString = commons.socketConnection_report(ied_ip, Integer.parseInt(ied_port), clientIp, Integer.parseInt(clientPort), requestObject, reportsName, "", eenameMap);
 //										
 //										if (receiveString != null && !receiveString.equals("")) {
 ////												System.out.println("receiveString ::: " + receiveString);
@@ -385,8 +386,7 @@ public class Startup {
 //											if(status.equals("Y")) {
 //												data = jsonObject.get("response").getAsString();
 //												System.out.println("response string ::: " + data);
-												
-												//----------------------------------------------------------------------
+												//--------------[ BRCB_SET_VALUES - End ]--------------------------------------------------------
 												
 												commandtype = "select";
 												datatype_fc = "BR";
@@ -502,9 +502,10 @@ public class Startup {
 														receiveString = commons.socketConnection_report(ied_ip, Integer.parseInt(ied_port), clientIp, Integer.parseInt(clientPort), requestObject2, reportsName, "", eenameMap);
 													}
 												}
-												//----------------------------------------------------------------------
+												//---------------[ BRCB_SET_VALUES ]----------------------------------------------------------
 //											}
 //										}
+										//--------------------[ BRCB_SET_VALUES - End ]-----------------------------------------------------
 									}
 								}
 							}

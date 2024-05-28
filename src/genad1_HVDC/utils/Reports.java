@@ -140,6 +140,9 @@ public class Reports extends Thread {
 					JsonArray respDataRf = null;
 					if (dataObj.has("data-reference")) respDataRf = dataObj.get("data-reference").getAsJsonArray();
 					if (respDataRf != null) {
+						
+						// Report response 파일을 1개만 생성하기위해 사용.
+						boolean fileNotExist = true;
 							
 						for (int j = 0; j<respDataRf.size(); j++) {
 							
@@ -175,7 +178,7 @@ public class Reports extends Thread {
 //							String[] timeArray = valueArray[2].split("[.]");
 //							String dateTime = timeArray[0];
 							
-							String unicTimeString = valueArray[0];
+							String unixTimeString = valueArray[0];
 							
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 							Date date = new Date(); // SBSH (MLU 부싱 진단장치), SIML (MLU 유중가스 분석장치_DGA)
@@ -187,7 +190,7 @@ public class Reports extends Thread {
 							if(!finalMsg.contains("SBSH") && !finalMsg.contains("SIML")) {
 								
 								// Unix타임 변환
-								long unixTime = Long.parseLong(unicTimeString);
+								long unixTime = Long.parseLong(unixTimeString);
 								date = new Date(unixTime*1000L);
 //								sdf.setTimeZone(TimeZone.getTimeZone("GMT+9"));
 							}
@@ -198,6 +201,7 @@ public class Reports extends Thread {
 							// "G101_01\\EVENT\\2024\\03\\20\\K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat";
 							String fileFullPath = "";
 							String fileName = "";
+							String fileName_binary = "";
 							String fileName_reportResponse = "";
 							
 							String thirdStr = eenameArray[2];
@@ -282,16 +286,29 @@ public class Reports extends Thread {
 								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "status.dat";
 							} else if(finalMsg.contains("SBSH_SettingValues")) {
 								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "settingvalues.dat";
-							} else if(finalMsg.contains("SIML_Diagnostic")) {
+							} else if(finalMsg.contains("SIML_Diagnostic") || finalMsg.contains("SBSH_Diagnostic")) {
 								fileName += eename + "_" + sensorKind_num + "_" + dateTime + "_" + "diagnostic.dat";
 							} else {
+								// binary 파일
 								fileName += eename + "_" + sensorKind_num + "_" + dateTime + ".dat";
-								fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_" + unicTimeString + ".dat";
+								fileName_binary += eename + "_" + sensorKind_num + "_" + dateTime + "_binary.dat";
+//								fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_" + unixTimeString + ".dat";
+								
+								// Report response 파일
+								if(finalMsg.contains("SCBR_Measurand") || finalMsg.contains("SPDC_Measurand") || finalMsg.contains("SLTC_Measurand")) {
+									fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_measurand.dat";
+								} else if(finalMsg.contains("SCBR_Status") || finalMsg.contains("SPDC_Status") || finalMsg.contains("SLTC_Status")) {
+									fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_status.dat";
+								} else if(finalMsg.contains("SCBR_SettingValues") || finalMsg.contains("SPDC_SettingValues") || finalMsg.contains("SLTC_SettingValues")) {
+									fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_settingvalues.dat";
+								} else if(finalMsg.contains("SCBR_Diagnostic") || finalMsg.contains("SPDC_Diagnostic") || finalMsg.contains("SLTC_Diagnostic")) {
+									fileName_reportResponse += eename + "_" + sensorKind_num + "_" + dateTime + "_diagnostic.dat";
+								}
 							}
 							
 							System.out.println("fileFullPath ::: " + fileFullPath);
 							System.out.println("fileName ::: " + fileName);
-							System.out.println("fileName_reportResponse ::: " + fileName_reportResponse);
+							System.out.println("fileName_binary ::: " + fileName_binary);
 							
 							// 폴더 생성
 							String fileFullPath_local = fileFullPath.replace("\\", "/");
@@ -315,14 +332,14 @@ public class Reports extends Thread {
 							if(finalMsg.contains("SBSH") || finalMsg.contains("SIML")) {
 								
 								// 파일 생성
-								FileWriter fileWriter = new FileWriter(uploadDir + fileName); //  /home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
+								FileWriter fileWriter = new FileWriter(uploadDir + fileName); //  /home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243_measurand.dat
 								PrintWriter printWriter = new PrintWriter(fileWriter);
 								printWriter.println(finalMsg);
 								printWriter.close();
 								
 								// 파일 이동
-								File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
-								File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243.dat
+								File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243_measurand.dat
+								File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/M101_01/VALUE/2024/03/29/K_J9999_MLU101_CH01_BSHCUR_9999201_99_20240329143243_measurand.dat
 								uploadFile.renameTo(completeFile);
 								
 								// 레포트 json 전체를 파일로 저장 후 빠져나감.
@@ -371,19 +388,27 @@ public class Reports extends Thread {
 										
 										// bin 파일 이동
 										File uploadFile = new File(uploadDir + fileName);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
-										File completeFile = new File(completeDir + fileName);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400.dat
+										File completeFile = new File(completeDir + fileName_binary);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_binary.dat
 										uploadFile.renameTo(completeFile);
 										
-										// Report response 파일 생성
-										FileWriter fileWriter = new FileWriter(uploadDir + fileName_reportResponse); // 
-										PrintWriter printWriter = new PrintWriter(fileWriter);
-										printWriter.println(finalMsg);
-										printWriter.close();
-										
-										// Report response 파일 이동
-										File uploadFile2 = new File(uploadDir + fileName_reportResponse);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_1713927726.dat
-										File completeFile2 = new File(completeDir + fileName_reportResponse);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_1713927726.dat
-										uploadFile2.renameTo(completeFile2);
+										if(fileNotExist) {
+
+											System.out.println("fileName_reportResponse ::: " + fileName_reportResponse);
+											
+											// Report response 파일을 1개만 생성하기위해 사용.
+											fileNotExist = false;
+											
+											// Report response 파일 생성
+											FileWriter fileWriter = new FileWriter(uploadDir + fileName_reportResponse); // 
+											PrintWriter printWriter = new PrintWriter(fileWriter);
+											printWriter.println(finalMsg);
+											printWriter.close();
+											
+											// Report response 파일 이동
+											File uploadFile2 = new File(uploadDir + fileName_reportResponse);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_diagnostic.dat
+											File completeFile2 = new File(completeDir + fileName_reportResponse);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_diagnostic.dat
+											uploadFile2.renameTo(completeFile2);
+										}
 										
 									} else {
 										System.out.println("FILE_GET message (" + reportsName + ")  : " + message);

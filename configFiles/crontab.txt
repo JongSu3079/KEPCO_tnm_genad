@@ -46,6 +46,7 @@
 * * * * * /home/KEPCO_iec61850/process_check.sh 8201 mlu_ied_rcb_SBSH_Measurand.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8201.log 2>&1
 * * * * * /home/KEPCO_iec61850/process_check.sh 8202 mlu_ied_rcb_SBSH_SettingValues.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8202.log 2>&1
 * * * * * /home/KEPCO_iec61850/process_check.sh 8203 mlu_ied_rcb_SBSH_Status.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8203.log 2>&1
+* * * * * /home/KEPCO_iec61850/process_check.sh 8214 mlu_ied_rcb_SBSH_Diagnostic.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8214.log 2>&1
 * * * * * /home/KEPCO_iec61850/process_check.sh 8204 mlu_ied_rcb_SIML_Diagnostic.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8204.log 2>&1
 * * * * * /home/KEPCO_iec61850/process_check.sh 8205 mlu_ied_rcb_SIML_Measurand.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8205.log 2>&1
 * * * * * /home/KEPCO_iec61850/process_check.sh 8206 mlu_ied_rcb_SIML_Status.txt mlu >> /home/KEPCO_iec61850/logs/mlu/processCheck/mlu_8206.log 2>&1

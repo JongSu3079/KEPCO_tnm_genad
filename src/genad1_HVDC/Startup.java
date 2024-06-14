@@ -303,7 +303,7 @@ public class Startup {
 										String report_rcb_name = "";
 										String report_rcb_receiver = "";
 
-										//------------[ BRCB_SET_VALUES ]----------------------------------------------------------
+										//------------[ BRCB_SET_VALUES - Start ]----------------------------------------------------------
 //										datatype_fc = "BR";
 //										key = ld + "/" + ln + "." + reportsName;
 //										value = "BRCB_SET_VALUES";
@@ -502,7 +502,7 @@ public class Startup {
 														receiveString = commons.socketConnection_report(ied_ip, Integer.parseInt(ied_port), clientIp, Integer.parseInt(clientPort), requestObject2, reportsName, "", eenameMap);
 													}
 												}
-												//---------------[ BRCB_SET_VALUES ]----------------------------------------------------------
+												//---------------[ BRCB_SET_VALUES - Start ]----------------------------------------------------------
 //											}
 //										}
 										//--------------------[ BRCB_SET_VALUES - End ]-----------------------------------------------------

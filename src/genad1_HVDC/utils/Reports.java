@@ -133,6 +133,10 @@ public class Reports extends Thread {
 					JsonObject jsonObject = (JsonObject) jsonParser.parse(finalMsg);
 					JsonObject dataObj = jsonObject.get("response").getAsJsonObject();
 					
+					// binary 파일과 쌍을 이루는 response 파일을 생성할때 사용.
+					JsonObject final_jsonObject = (JsonObject) jsonParser.parse(finalMsg);
+					JsonObject final_dataObj = final_jsonObject.get("response").getAsJsonObject();
+					
 					// value, reason
 					JsonArray respValue = dataObj.get("value").getAsJsonArray();
 //					JsonArray reasons = dataObj.get("reason for inclusion").getAsJsonArray();
@@ -142,7 +146,7 @@ public class Reports extends Thread {
 					if (respDataRf != null) {
 						
 						// Report response 파일을 1개만 생성하기위해 사용.
-						boolean fileNotExist = true;
+//						boolean fileNotExist = true;
 							
 						for (int j = 0; j<respDataRf.size(); j++) {
 							
@@ -154,13 +158,12 @@ public class Reports extends Thread {
 							String fileType = tmpRf2[2];	// RTTransF, EvtTransF, TrendTransF
 							String datatype_comment = "";
 							
-							System.out.println("----> 레포트 fileType : " + fileType);
-							
 							// 이벤트, 트렌드, 실시간 레포트가 아닐경우 skip
 							// SBSH, SIML ( 레포트의 value값으로 파일 생성 )
 							if(!fileType.equals("EvtTransF") && !fileType.equals("TrendTransF") && !fileType.equals("RTTransF") && !finalMsg.contains("SBSH") && !finalMsg.contains("SIML")) {
 								continue;
 							}
+							System.out.println("----> 레포트 fileType : " + fileType);
 							
 							// EEName
 							// e.g) K_J9999_GLU101_CH01_CBOP_9999001
@@ -309,6 +312,7 @@ public class Reports extends Thread {
 							System.out.println("fileFullPath ::: " + fileFullPath);
 							System.out.println("fileName ::: " + fileName);
 							System.out.println("fileName_binary ::: " + fileName_binary);
+							System.out.println("fileName_reportResponse ::: " + fileName_reportResponse);
 							
 							// 폴더 생성
 							String fileFullPath_local = fileFullPath.replace("\\", "/");
@@ -391,24 +395,48 @@ public class Reports extends Thread {
 										File completeFile = new File(completeDir + fileName_binary);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_binary.dat
 										uploadFile.renameTo(completeFile);
 										
-										if(fileNotExist) {
-
-											System.out.println("fileName_reportResponse ::: " + fileName_reportResponse);
+//										if(fileNotExist) {
 											
 											// Report response 파일을 1개만 생성하기위해 사용.
-											fileNotExist = false;
+//											fileNotExist = false;
+										
+											// Report response 데이터중 현재 값만 남기기.
+											JsonArray final_respDataRf = new JsonArray();
+											JsonArray final_respValue = new JsonArray();
+											
+											// 같은 채널의 속성을 전부 추가
+											for (int k = 0; k<respDataRf.size(); k++) {
+												
+												String tmpDataRf2 = respDataRf.get(k).getAsString();
+
+												// e.g) firstStr = GNDMUGLU01/SCBR2
+												if(tmpDataRf2.startsWith(firstStr + "$")) {
+													String tempValue2 = respValue.get(k).getAsString();
+													
+													final_respDataRf.add(tmpDataRf2);
+													final_respValue.add(tempValue2);
+												}
+											}
+											
+											final_dataObj.add("data-reference", final_respDataRf);
+											final_dataObj.add("value", final_respValue);
+											
+											final_jsonObject.add("response", final_dataObj);
+											
+											System.out.println("final_jsonObject ------> " + final_jsonObject.toString());
 											
 											// Report response 파일 생성
 											FileWriter fileWriter = new FileWriter(uploadDir + fileName_reportResponse); // 
 											PrintWriter printWriter = new PrintWriter(fileWriter);
-											printWriter.println(finalMsg);
+//											printWriter.println(finalMsg);
+											printWriter.println(final_jsonObject.toString()); // 현재 값만 파일로 생성
 											printWriter.close();
 											
 											// Report response 파일 이동
 											File uploadFile2 = new File(uploadDir + fileName_reportResponse);		//	/home/KEPCO_iec61850/upload/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_diagnostic.dat
 											File completeFile2 = new File(completeDir + fileName_reportResponse);	//	/home/KEPCO_iec61850/complete/G101_01/EVENT/2024/03/20/K_J9999_GLU101_CH01_CBOP_9999001_22_20240320143400_diagnostic.dat
 											uploadFile2.renameTo(completeFile2);
-										}
+//										}
 										
 									} else {
 										System.out.println("FILE_GET message (" + reportsName + ")  : " + message);
